@@ -12,6 +12,7 @@
         android:id="@+id/text_test_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:freezesText="true"
         android:text="@string/score"
         android:textColor="@android:color/black" />
 
@@ -20,6 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/text_test_score"
+        android:freezesText="true"
         android:text="@string/savollar"
         android:textColor="@android:color/black" />
 
@@ -28,6 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
+        android:freezesText="true"
         android:text="@string/vaqt"
         android:textColor="@android:color/black"
         android:textSize="40sp" />
@@ -38,6 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@id/radio_group"
         android:layout_marginBottom="16dp"
+        android:freezesText="true"
         android:text="@string/test_savollari"
         android:textAlignment="center"
         android:textColor="@android:color/black"
@@ -53,18 +57,21 @@
             android:id="@+id/radio_btn1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:freezesText="true"
             android:text="@string/option_1" />
 
         <RadioButton
             android:id="@+id/radio_btn2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:freezesText="true"
             android:text="@string/option_2" />
 
         <RadioButton
             android:id="@+id/radio_btn3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:freezesText="true"
             android:text="@string/option_3" />
     </RadioGroup>
 
@@ -74,5 +81,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/radio_group"
         android:layout_marginTop="16dp"
+        android:freezesText="true"
         android:text="@string/javobni_tasdiqlash" />
 </RelativeLayout>

@@ -1,6 +1,13 @@
 package com.example.mytest;
 
-public class Test {
+import android.os.Parcel;
+import android.os.Parcelable;
+
+public class Test implements Parcelable {
+    public static final String DIFFICULTY_EASY = "Easy";
+   // public static final String DIFFICULTY_EASY = "Easy";
+   // public static final String DIFFICULTY_EASY = "Easy";
+
     private String Savol;
     private String Javob1;
     private String Javob2;
@@ -56,5 +63,39 @@ public class Test {
 
     public void setAnswerNr(int answerNr) {
         this.answerNr = answerNr;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    protected Test(Parcel in) {
+        Savol = in.readString();
+        Javob1 = in.readString();
+        Javob2 = in.readString();
+        Javob3 = in.readString();
+        answerNr = in.readInt();
+    }
+
+    public static final Creator<Test> CREATOR = new Creator<Test>() {
+        @Override
+        public Test createFromParcel(Parcel source) {
+            return new Test(source);
+        }
+
+        @Override
+        public Test[] newArray(int size) {
+            return new Test[size];
+        }
+    };
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(Savol);
+        dest.writeString(Javob1);
+        dest.writeString(Javob2);
+        dest.writeString(Javob3);
+        dest.writeInt(answerNr);
     }
 }

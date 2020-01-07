@@ -13,5 +13,7 @@ public final class TestContract {
         public static final String COL_JAVOB2 = "javob2";
         public static final String COL_JAVOB3 = "javob3";
         public static final String COL_NUMBER = "answer_nr";
+        public static final String COL_DIFFICULTY = "difficulty";
+
     }
 }

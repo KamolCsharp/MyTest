@@ -1,11 +1,14 @@
 package com.example.mytest;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
@@ -13,23 +16,38 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class TestActivity extends AppCompatActivity {
+
+    public static final String EXTRA_SCORE = "extraScore";
+    private static final long TEST_VAQTI = 30000;
+    private static final String KEY_SCORE = "keyScore";
+    private static final String KEY_TEST_SONI = "keyTestSoni";
+    private static final String KEY_VAQT = "keyVaqti";
+    private static final String KEY_ANSWERD = "keyAnswered";
+    private static final String KEY_TEST_LIST = "keyTestList";
+
 
     private TextView tv_score, tv_soni, tv_time, tv_savol;
     private RadioGroup rbG;
     private RadioButton rb1, rb2, rb3;
     private Button btn;
     private ColorStateList stateList;
+    private ColorStateList timecolor;
+    private CountDownTimer countDownTimer;
+    private long vaqtmillisekund;
     private int testcounter = 0;
     private int testSoni = 0;
     private Test test;
     private int score;
     private boolean answered;
-    private List<Test> testList;
+    private ArrayList<Test> testList;
+    private long backTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,13 +64,29 @@ public class TestActivity extends AppCompatActivity {
         btn = findViewById(R.id.btn_test_javob);
 
         stateList = rb1.getTextColors();
+        timecolor = tv_soni.getTextColors();
+        if (savedInstanceState == null) {
+            TestDbHelper db = new TestDbHelper(this);
+            testList = db.getAllTest();
+            testSoni = testList.size();
+            Collections.shuffle(testList);
+            showNextTest();
+        } else {
+            testList = savedInstanceState.getParcelableArrayList(KEY_TEST_LIST);
+            testSoni = testList.size();
+            testcounter = savedInstanceState.getInt(KEY_TEST_SONI);
+            test = testList.get(testcounter - 1);
+            score = savedInstanceState.getInt(KEY_SCORE);
+            vaqtmillisekund = savedInstanceState.getLong(KEY_VAQT);
+            answered = savedInstanceState.getBoolean(KEY_ANSWERD);
+            if (!answered) {
+                startCountDown();
+            } else {
+                updateVaqtText();
+                showSolution();
+            }
 
-        TestDbHelper db = new TestDbHelper(this);
-        testList = db.getAllTest();
-        testSoni = testList.size();
-        Collections.shuffle(testList);
-        showNextTest();
-
+        }
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,9 +105,28 @@ public class TestActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_SCORE, score);
+        outState.putInt(KEY_TEST_SONI, testSoni);
+        outState.putLong(KEY_VAQT, vaqtmillisekund);
+        outState.putBoolean(KEY_ANSWERD, answered);
+        outState.putParcelableArrayList(KEY_TEST_LIST, testList);
+    }
+
     @SuppressLint("SetTextI18n")
     private void checkAnswer() {
         answered = true;
+        countDownTimer.cancel();
         RadioButton radioButton = findViewById(rbG.getCheckedRadioButtonId());
         int answerNr = rbG.indexOfChild(radioButton) + 1;
         if (answerNr == test.getAnswerNr()) {
@@ -107,7 +160,7 @@ public class TestActivity extends AppCompatActivity {
 
         if (testcounter < testSoni) {
             btn.setText("Next");
-        }else{
+        } else {
             btn.setText("Finish");
         }
     }
@@ -131,12 +184,56 @@ public class TestActivity extends AppCompatActivity {
             tv_soni.setText("Savollar: " + testcounter + "/" + testSoni);
             answered = false;
             btn.setText("Qabul qilindi");
+            vaqtmillisekund = TEST_VAQTI;
+            startCountDown();
         } else {
             finishTest();
         }
     }
 
+    private void startCountDown() {
+        countDownTimer = new CountDownTimer(vaqtmillisekund, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                vaqtmillisekund = millisUntilFinished;
+                updateVaqtText();
+            }
+
+            @Override
+            public void onFinish() {
+                vaqtmillisekund = 0;
+                updateVaqtText();
+                checkAnswer();
+            }
+        }.start();
+    }
+
+    private void updateVaqtText() {
+        int minut = (int) (vaqtmillisekund / 1000) / 60;
+        int sekund = (int) (vaqtmillisekund / 1000) % 60;
+        String timeformat = String.format(Locale.getDefault(), "%02d:%02d", minut, sekund);
+        tv_time.setText(timeformat);
+        if (vaqtmillisekund < 10000) {
+            tv_time.setTextColor(Color.RED);
+        } else {
+            tv_time.setTextColor(timecolor);
+        }
+    }
+
     private void finishTest() {
+        Intent intentional = new Intent();
+        intentional.putExtra(EXTRA_SCORE, score);
+        setResult(RESULT_OK, intentional);
         finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (backTime + 2000 > System.currentTimeMillis()) {
+            finishTest();
+        } else {
+            Toast.makeText(this, "Press back again to finish", Toast.LENGTH_SHORT).show();
+        }
+        backTime = System.currentTimeMillis();
     }
 }

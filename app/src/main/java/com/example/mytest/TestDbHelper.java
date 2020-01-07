@@ -71,8 +71,8 @@ public class TestDbHelper extends SQLiteOpenHelper {
     }
 
     @SuppressLint("Recycle")
-    public List<Test> getAllTest() {
-        List<Test> testList = new ArrayList<>();
+    public ArrayList<Test> getAllTest() {
+        ArrayList<Test> testList = new ArrayList<>();
         db = getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TestTable.TABLE_NAME, null);
 
