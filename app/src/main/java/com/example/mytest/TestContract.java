@@ -2,24 +2,24 @@ package com.example.mytest;
 
 import android.provider.BaseColumns;
 
-public final class TestContract {
+ final class TestContract {
     private TestContract() {
     }
 
-    public static class Kategoriya implements BaseColumns {
-        public static final String TABLE_NAME = "test_kategoriya";
-        public static final String COL_NAME = "categoriya";
+     static class Kategoriya implements BaseColumns {
+         static final String TABLE_NAME = "test_kategoriya";
+         static final String COL_NAME = "categoriya";
     }
 
-    public static class TestTable implements BaseColumns {
-        public static final String TABLE_NAME = "test_savollar";
-        public static final String COL_SAVOL = "savollar";
-        public static final String COL_JAVOB1 = "javob1";
-        public static final String COL_JAVOB2 = "javob2";
-        public static final String COL_JAVOB3 = "javob3";
-        public static final String COL_NUMBER = "answer_nr";
-        public static final String COL_DIFFICULTY = "difficulty";
-        public static final String COL_CATEGORY_ID = "category_id";
+     static class TestTable implements BaseColumns {
+         static final String TABLE_NAME = "test_savollar";
+         static final String COL_SAVOL = "savollar";
+         static final String COL_JAVOB1 = "javob1";
+         static final String COL_JAVOB2 = "javob2";
+         static final String COL_JAVOB3 = "javob3";
+         static final String COL_NUMBER = "answer_nr";
+         static final String COL_DIFFICULTY = "difficulty";
+         static final String COL_CATEGORY_ID = "category_id";
 
     }
 }

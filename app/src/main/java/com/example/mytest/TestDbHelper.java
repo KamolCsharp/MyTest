@@ -6,12 +6,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
 import java.util.ArrayList;
-import java.util.List;
-
-import static com.example.mytest.TestContract.*;
-
+import static com.example.mytest.TestContract.TestTable;
 
 public class TestDbHelper extends SQLiteOpenHelper {
 
@@ -19,26 +15,25 @@ public class TestDbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "test.db";
     private static final int DATABASE_VERSION = 1;
     private static TestDbHelper instance;
-
     private SQLiteDatabase db;
     //endregion
 
     //region Konstruktor
-
-    public TestDbHelper(Context context) {
+     TestDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
-
     //endregion
-    public static synchronized TestDbHelper getInstance(Context context) {
+
+    //region Bazani sinxron Ishlashi uchun
+    static synchronized TestDbHelper getInstance(Context context) {
         if (instance == null) {
             instance = new TestDbHelper(context.getApplicationContext());
         }
         return instance;
     }
+    //endregion
 
     //region Yangi Jadval Yaratish
-
     @Override
     public void onCreate(SQLiteDatabase db) {
         this.db = db;
@@ -59,7 +54,8 @@ public class TestDbHelper extends SQLiteOpenHelper {
                 TestTable.COL_DIFFICULTY + " TEXT, " +
                 TestTable.COL_CATEGORY_ID + " INTEGER, " +
                 "FOREIGN KEY(" + TestTable.COL_CATEGORY_ID + ") REFERENCES " +
-                TestContract.Kategoriya.TABLE_NAME + "(" + TestContract.Kategoriya._ID + ")" +
+                TestContract.Kategoriya.TABLE_NAME + "(" +
+                TestContract.Kategoriya._ID + ")" +
                 "ON DELETE CASCADE" +
                 ");";
 
@@ -68,7 +64,9 @@ public class TestDbHelper extends SQLiteOpenHelper {
         fillKategoriyaTable();
         fillQuestionsTable();
     }
+    //endregion
 
+    //region Kategoriya Malumotlar
     private void fillKategoriyaTable() {
         Kategoriya k1 = new Kategoriya("Programming");
         addKategoriya(k1);
@@ -77,15 +75,15 @@ public class TestDbHelper extends SQLiteOpenHelper {
         Kategoriya k3 = new Kategoriya("Math");
         addKategoriya(k3);
     }
+    //endregion
 
+    //region Kategoriyaga Yangi Malumot Qoshish
     private void addKategoriya(Kategoriya k) {
         ContentValues cv = new ContentValues();
         cv.put(TestContract.Kategoriya.COL_NAME, k.getName());
         db.insert(TestContract.Kategoriya.TABLE_NAME, null, cv);
     }
-
     //endregion
-
 
     @Override
     public void onConfigure(SQLiteDatabase db) {
@@ -119,12 +117,10 @@ public class TestDbHelper extends SQLiteOpenHelper {
                 "15", "11", "16", 1,
                 Test.DIFFICULTY_HARD, Kategoriya.MATH);
         AddTest(test6);
-
-
     }
     //endregion
 
-    //region Bazaga Yangi Malumot Qoshish
+    //region Testga Yangi Malumot Qoshish
     private void AddTest(Test test) {
         ContentValues cv = new ContentValues();
         cv.put(TestTable.COL_SAVOL, test.getSavol());
@@ -132,10 +128,9 @@ public class TestDbHelper extends SQLiteOpenHelper {
         cv.put(TestTable.COL_JAVOB2, test.getJavob2());
         cv.put(TestTable.COL_JAVOB3, test.getJavob3());
         cv.put(TestTable.COL_NUMBER, test.getTogriJavob());
-        cv.put(TestTable.COL_DIFFICULTY, test.getDifficulty());
+        cv.put(TestTable.COL_DIFFICULTY, test.getQiyinlik_darajasi());
         cv.put(TestTable.COL_CATEGORY_ID, test.getCategoryID());
         db.insert(TestTable.TABLE_NAME, null, cv);
-
     }
     //endregion
 
@@ -148,48 +143,28 @@ public class TestDbHelper extends SQLiteOpenHelper {
     }
     //endregion
 
-    //region Bazadan Malumotlarni Oqib Olish
+    //region Kategoriya Malumotlarni Oqib Olish
     @SuppressLint("Recycle")
-    public ArrayList<Test> getAllTest() {
-        ArrayList<Test> testList = new ArrayList<>();
+    ArrayList<Kategoriya> getKategoriya() {
+        ArrayList<Kategoriya> testList = new ArrayList<>();
         db = getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TestTable.TABLE_NAME, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TestContract.Kategoriya.TABLE_NAME , null);
 
         if (cursor.moveToFirst()) {
             do {
-                Test test = new Test();
-                test.setId(cursor.getInt(cursor.getColumnIndex(TestTable.COL_CATEGORY_ID)));
-                test.setSavol(cursor.getString(cursor.getColumnIndex(TestTable.COL_SAVOL)));
-                test.setJavob1(cursor.getString(cursor.getColumnIndex(TestTable.COL_JAVOB1)));
-                test.setJavob2(cursor.getString(cursor.getColumnIndex(TestTable.COL_JAVOB2)));
-                test.setJavob3(cursor.getString(cursor.getColumnIndex(TestTable.COL_JAVOB3)));
-                test.setTogriJavob(cursor.getInt(cursor.getColumnIndex(TestTable.COL_NUMBER)));
-                test.setDifficulty(cursor.getString(cursor.getColumnIndex(TestTable.COL_DIFFICULTY)));
-                test.setCategoryID(cursor.getInt(cursor.getColumnIndex(TestTable.COL_CATEGORY_ID)));
+                Kategoriya test = new Kategoriya();
+                test.setId(cursor.getInt(cursor.getColumnIndex(TestContract.Kategoriya._ID)));
+                test.setName(cursor.getString(cursor.getColumnIndex(TestContract.Kategoriya.COL_NAME)));
                 testList.add(test);
             } while (cursor.moveToNext());
         }
         cursor.close();
         return testList;
     }
+    //endregion
 
-    public List<Kategoriya> getAllKategory() {
-        List<Kategoriya> category = new ArrayList<>();
-        db = getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT * FROM " + TestContract.Kategoriya.TABLE_NAME, null);
-        if (c.moveToFirst()) {
-            do {
-                Kategoriya kategoriya = new Kategoriya();
-                kategoriya.setId(c.getInt(c.getColumnIndex(TestContract.Kategoriya._ID)));
-                kategoriya.setName(c.getString(c.getColumnIndex(TestContract.Kategoriya.COL_NAME)));
-                category.add(kategoriya);
-            } while (c.moveToFirst());
-        }
-        c.close();
-        return category;
-    }
-
-    public ArrayList<Test> getTest(int kategory, String daraja) {
+    //region Testlarni Oqib Olish
+    ArrayList<Test> getTest(int kategory, String daraja) {
         ArrayList<Test> testList = new ArrayList<>();
         db = getReadableDatabase();
 
@@ -215,7 +190,7 @@ public class TestDbHelper extends SQLiteOpenHelper {
                 test.setJavob2(cursor.getString(cursor.getColumnIndex(TestTable.COL_JAVOB2)));
                 test.setJavob3(cursor.getString(cursor.getColumnIndex(TestTable.COL_JAVOB3)));
                 test.setTogriJavob(cursor.getInt(cursor.getColumnIndex(TestTable.COL_NUMBER)));
-                test.setDifficulty(cursor.getString(cursor.getColumnIndex(TestTable.COL_DIFFICULTY)));
+                test.setQiyinlik_darajasi(cursor.getString(cursor.getColumnIndex(TestTable.COL_DIFFICULTY)));
                 test.setCategoryID(cursor.getInt(cursor.getColumnIndex(TestTable.COL_CATEGORY_ID)));
                 testList.add(test);
             } while (cursor.moveToNext());
