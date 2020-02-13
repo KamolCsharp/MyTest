@@ -10,20 +10,21 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Locale;
 
 public class TestActivity extends AppCompatActivity {
 
+    //region Ozgarmas Konstanatalar
     public static final String EXTRA_SCORE = "extraScore";
     private static final long TEST_VAQTI = 30000;
     private static final String KEY_SCORE = "keyScore";
@@ -31,9 +32,13 @@ public class TestActivity extends AppCompatActivity {
     private static final String KEY_VAQT = "keyVaqti";
     private static final String KEY_ANSWERD = "keyAnswered";
     private static final String KEY_TEST_LIST = "keyTestList";
+    //endregion
 
-
-    private TextView tv_score, tv_soni, tv_time, tv_savol;
+    //region Ozgaruvchilar
+    private TextView tv_score;
+    private TextView tv_soni;
+    private TextView tv_time;
+    private TextView tv_savol;
     private RadioGroup rbG;
     private RadioButton rb1, rb2, rb3;
     private Button btn;
@@ -49,25 +54,41 @@ public class TestActivity extends AppCompatActivity {
     private ArrayList<Test> testList;
     private long backTime;
 
+    //endregion
+
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
+
+        //region Kompanentalarni Chaqirib Olish
         tv_time = findViewById(R.id.text_test_time);
         tv_savol = findViewById(R.id.text_test_savollar);
         tv_soni = findViewById(R.id.text_test_savollar_soni);
         tv_score = findViewById(R.id.text_test_score);
+        TextView tv_qiyin = findViewById(R.id.text_qiyinlikdarajasi);
+        TextView tv_kategoriya = findViewById(R.id.text_kategoriya);
         rbG = findViewById(R.id.radio_group);
         rb1 = findViewById(R.id.radio_btn1);
         rb2 = findViewById(R.id.radio_btn2);
         rb3 = findViewById(R.id.radio_btn3);
         btn = findViewById(R.id.btn_test_javob);
+        //endregion
+
 
         stateList = rb1.getTextColors();
         timecolor = tv_soni.getTextColors();
+        Intent intent = getIntent();
+        String qiyinlik = intent.getStringExtra(MainActivity.EXTRA_DARAJA);
+        int kategoriyaId = intent.getIntExtra(MainActivity.EXTRA_KATEGORIYA_ID, 0);
+        String kategoriya = intent.getStringExtra(MainActivity.EXTRA_KATEGORIYA_NAME);
+        tv_qiyin.setText("Daraja: " + qiyinlik)
+        ;
+        tv_kategoriya.setText("Kategoriya: " + kategoriya);
         if (savedInstanceState == null) {
-            TestDbHelper db = new TestDbHelper(this);
-            testList = db.getAllTest();
+            TestDbHelper db = TestDbHelper.getInstance(this);
+            testList = db.getTest(kategoriyaId, qiyinlik);
             testSoni = testList.size();
             Collections.shuffle(testList);
             showNextTest();
@@ -105,6 +126,7 @@ public class TestActivity extends AppCompatActivity {
         });
     }
 
+    //region Tozalash
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -112,16 +134,19 @@ public class TestActivity extends AppCompatActivity {
             countDownTimer.cancel();
         }
     }
+    //endregion
 
+    //region ShaerdgaSaqlsh
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_SCORE, score);
-        outState.putInt(KEY_TEST_SONI, testSoni);
+        outState.putInt(KEY_TEST_SONI, testcounter);
         outState.putLong(KEY_VAQT, vaqtmillisekund);
         outState.putBoolean(KEY_ANSWERD, answered);
         outState.putParcelableArrayList(KEY_TEST_LIST, testList);
     }
+    //endregion
 
     @SuppressLint("SetTextI18n")
     private void checkAnswer() {
@@ -129,20 +154,21 @@ public class TestActivity extends AppCompatActivity {
         countDownTimer.cancel();
         RadioButton radioButton = findViewById(rbG.getCheckedRadioButtonId());
         int answerNr = rbG.indexOfChild(radioButton) + 1;
-        if (answerNr == test.getAnswerNr()) {
+        if (answerNr == test.getTogriJavob()) {
             score++;
             tv_score.setText("Score: " + score);
         }
         showSolution();
     }
 
+    //region JavobTanlangandaRanglar
     @SuppressLint("SetTextI18n")
     private void showSolution() {
         rb1.setTextColor(Color.RED);
         rb2.setTextColor(Color.RED);
         rb3.setTextColor(Color.RED);
 
-        switch (test.getAnswerNr()) {
+        switch (test.getTogriJavob()) {
             case 1:
                 rb1.setTextColor(Color.GREEN);
                 tv_savol.setText("Answer 1 is correct");
@@ -164,7 +190,9 @@ public class TestActivity extends AppCompatActivity {
             btn.setText("Finish");
         }
     }
+    //endregion
 
+    //region Javob Berish
     @SuppressLint("SetTextI18n")
     private void showNextTest() {
         rb1.setTextColor(stateList);
@@ -183,7 +211,7 @@ public class TestActivity extends AppCompatActivity {
             testcounter++;
             tv_soni.setText("Savollar: " + testcounter + "/" + testSoni);
             answered = false;
-            btn.setText("Qabul qilindi");
+            btn.setText("Javob berish");
             vaqtmillisekund = TEST_VAQTI;
             startCountDown();
         } else {
@@ -191,6 +219,9 @@ public class TestActivity extends AppCompatActivity {
         }
     }
 
+    //endregion
+
+    //region Vaqt
     private void startCountDown() {
         countDownTimer = new CountDownTimer(vaqtmillisekund, 1000) {
             @Override
@@ -219,6 +250,7 @@ public class TestActivity extends AppCompatActivity {
             tv_time.setTextColor(timecolor);
         }
     }
+    //endregion
 
     private void finishTest() {
         Intent intentional = new Intent();
@@ -232,7 +264,7 @@ public class TestActivity extends AppCompatActivity {
         if (backTime + 2000 > System.currentTimeMillis()) {
             finishTest();
         } else {
-            Toast.makeText(this, "Press back again to finish", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Yopishdan Oldin Testni Oxirga Yitkazing", Toast.LENGTH_SHORT).show();
         }
         backTime = System.currentTimeMillis();
     }

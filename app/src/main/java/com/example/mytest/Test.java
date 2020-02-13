@@ -5,26 +5,35 @@ import android.os.Parcelable;
 
 public class Test implements Parcelable {
     public static final String DIFFICULTY_EASY = "Easy";
-   // public static final String DIFFICULTY_EASY = "Easy";
-   // public static final String DIFFICULTY_EASY = "Easy";
+    public static final String DIFFICULTY_MEDIUM = "Medium";
+    public static final String DIFFICULTY_HARD = "Hard";
 
+    private int id;
     private String Savol;
     private String Javob1;
     private String Javob2;
     private String Javob3;
-    private int answerNr;
+    private int TogriJavob;
+    private String difficulty;
+    private int categoryID;
 
+    //region Construktor
     public Test() {
     }
 
-    public Test(String savol, String javob1, String javob2, String javob3, int answerNr) {
+    public Test(String savol, String javob1, String javob2,
+                String javob3, int answerNr, String difficulty, int categoryID) {
         Savol = savol;
+        this.difficulty = difficulty;
         Javob1 = javob1;
         Javob2 = javob2;
         Javob3 = javob3;
-        this.answerNr = answerNr;
+        this.TogriJavob = answerNr;
+        this.categoryID = categoryID;
     }
+    //endregion
 
+    //region Get and Set
     public String getSavol() {
         return Savol;
     }
@@ -57,13 +66,15 @@ public class Test implements Parcelable {
         Javob3 = javob3;
     }
 
-    public int getAnswerNr() {
-        return answerNr;
+    public int getTogriJavob() {
+        return TogriJavob;
     }
 
-    public void setAnswerNr(int answerNr) {
-        this.answerNr = answerNr;
+    public void setTogriJavob(int togriJavob) {
+        this.TogriJavob = togriJavob;
     }
+
+    //endregion
 
     @Override
     public int describeContents() {
@@ -71,11 +82,14 @@ public class Test implements Parcelable {
     }
 
     protected Test(Parcel in) {
+        id = in.readInt();
         Savol = in.readString();
         Javob1 = in.readString();
         Javob2 = in.readString();
         Javob3 = in.readString();
-        answerNr = in.readInt();
+        TogriJavob = in.readInt();
+        difficulty = in.readString();
+        categoryID = in.readInt();
     }
 
     public static final Creator<Test> CREATOR = new Creator<Test>() {
@@ -90,12 +104,47 @@ public class Test implements Parcelable {
         }
     };
 
+    public String getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
         dest.writeString(Savol);
         dest.writeString(Javob1);
         dest.writeString(Javob2);
         dest.writeString(Javob3);
-        dest.writeInt(answerNr);
+        dest.writeInt(TogriJavob);
+        dest.writeString(difficulty);
+        dest.writeInt(categoryID);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getCategoryID() {
+        return categoryID;
+    }
+
+    public void setCategoryID(int categoryID) {
+        this.categoryID = categoryID;
+    }
+
+    public static String[] getAllTestDaraja() {
+        return new String[]{
+                DIFFICULTY_EASY,
+                DIFFICULTY_MEDIUM,
+                DIFFICULTY_HARD
+        };
     }
 }

@@ -6,6 +6,11 @@ public final class TestContract {
     private TestContract() {
     }
 
+    public static class Kategoriya implements BaseColumns {
+        public static final String TABLE_NAME = "test_kategoriya";
+        public static final String COL_NAME = "categoriya";
+    }
+
     public static class TestTable implements BaseColumns {
         public static final String TABLE_NAME = "test_savollar";
         public static final String COL_SAVOL = "savollar";
@@ -14,6 +19,7 @@ public final class TestContract {
         public static final String COL_JAVOB3 = "javob3";
         public static final String COL_NUMBER = "answer_nr";
         public static final String COL_DIFFICULTY = "difficulty";
+        public static final String COL_CATEGORY_ID = "category_id";
 
     }
 }
